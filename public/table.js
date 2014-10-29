@@ -1,19 +1,55 @@
 $(function () {
-	var table = new Table('.table-container');
+	var table = new Table('.table-container', [
+		{ title: 'ID' },
+		{ title: 'Имя' },
+		{ title: 'Фамилия' },
+		{ title: 'Подпольная кличка' },
+		{ title: 'Динамика' },
+		{ title: 'Фаворит', disableSorting: true },
+		{ title: 'Что-то со ссылкой' }
+	]);
 
-	$.getJSON('data.json', function (data) {
-		table.appendData(data);
-		table.render();
-	});
+	function loadData(limit, offset, sort, sortOrder) {
+		$.getJSON('/data',
+			{
+				limit: limit,
+				offset: offset,
+				sort: sort,
+				sortOrder: sortOrder
+			},
+			function (data) {
+				table.appendData(data);
+				table.render();
+			});
+	}
+
+	loadData(1000);
 
 
-	function Table(tableContainer, data) {
-		this.tableContainer = $(tableContainer).get(0);
+	function Table(tableContainer, columns) {
+		this.tableContainer = $(tableContainer);
 		this.rows = [];
+
+		this.header = new TableHeader(columns);
+		this.header.parentTable = this;
+
+		var table = this;
+		this.tableContainer.on('click', 'th .pseudo', function () {
+			var newSortIndex = table.header.elements.index($(this).closest('th'));
+			if (newSortIndex == table.sortIndex) {
+				table.sortOrder = -1 * table.sortOrder;
+			} else {
+				table.sortOrder = 1;
+			}
+			table.sortIndex = newSortIndex;
+			loadData(1000, 0, table.sortIndex, table.sortOrder);
+		})
 	}
 
 	Table.prototype.appendData = function (data) {
 		this.data = $.isArray(data) ? data : [];
+
+		this.rows = [];
 
 		for (var i = 0, l = this.data.length; i < l; i++) {
 			this.rows.push(new TableRow(this.data[i]))
@@ -21,12 +57,39 @@ $(function () {
 	};
 
 	Table.prototype.render = function () {
-		var html = '';
+		var html = this.header.render();
 		for (var i = 0, l = this.rows.length; i < l; i++) {
 			html += this.rows[i].render();
 		}
 
-		this.tableContainer.innerHTML = '<table>' + html + '</table>';
+		this.tableContainer.get(0).innerHTML = '<table>' + html + '</table>';
+		this.header.elements = this.tableContainer.find('th');
+	};
+
+
+	function TableHeader(columns) {
+		this.columns = $.isArray(columns) ? columns : [];
+		this.sortOrderIcons = {
+			'1': '&uarr;',
+			'-1': '&darr;'
+		}
+	}
+
+	TableHeader.prototype.render = function () {
+		var html = '';
+		for (var i = 0, l = this.columns.length; i < l; i++) {
+			html += '<th>' +
+				'<div class="header_placeholder">' + this.columns[i].title + '</div>' +
+				'<div class="header_sticky">' +
+					(this.columns[i].disableSorting
+						? this.columns[i].title
+						: '<span class="pseudo">' + this.columns[i].title + '</span>') +
+					(this.parentTable.sortIndex == i ? ' ' + this.sortOrderIcons[this.parentTable.sortOrder] : '') +
+				'</div>' +
+				'</th>';
+		}
+
+		return '<tr>' + html + '</tr>';
 	};
 
 

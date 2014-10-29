@@ -1,0 +1,53 @@
+.header-backdrop {
+	background: #fff;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 2em;
+	border-bottom: 1px solid #eee;
+}
+
+
+td,
+th {
+	padding: 5px 10px;
+	vertical-align: top;
+}
+
+th {
+	font-weight: normal;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.pseudo {
+	color: blue;
+	border-bottom: 1px dotted;
+	cursor: pointer;
+}
+
+.pseudo:hover {
+	color: red;
+}
+
+.header_placeholder {
+	visibility: hidden;
+}
+
+.header_sticky {
+	position: fixed;
+	top: 0.5em;
+}
+
+.cell_type_number {
+	text-align: right;
+}
+
+.cell_positive_yes {
+	color: blue;
+}
+
+.cell_positive_no {
+	color: red;
+}
