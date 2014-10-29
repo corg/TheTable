@@ -3,7 +3,7 @@ $(function () {
 		{ title: 'ID' },
 		{ title: 'Имя' },
 		{ title: 'Фамилия' },
-		{ title: 'Подпольная кличка' },
+		{ title: 'Место работы' },
 		{ title: 'Динамика' },
 		{ title: 'Фаворит', disableSorting: true },
 		{ title: 'Что-то со ссылкой' }
@@ -81,10 +81,8 @@ $(function () {
 			html += '<th>' +
 				'<div class="header_placeholder">' + this.columns[i].title + '</div>' +
 				'<div class="header_sticky">' +
-					(this.columns[i].disableSorting
-						? this.columns[i].title
-						: '<span class="pseudo">' + this.columns[i].title + '</span>') +
-					(this.parentTable.sortIndex == i ? ' ' + this.sortOrderIcons[this.parentTable.sortOrder] : '') +
+					(this.columns[i].disableSorting ? this.columns[i].title	: '<span class="pseudo">' + this.columns[i].title + '</span>') +
+					(this.parentTable.sortIndex == i ? ' <span class="header__sort-icon">' + this.sortOrderIcons[this.parentTable.sortOrder] + '</span>' : '') +
 				'</div>' +
 				'</th>';
 		}
@@ -139,7 +137,7 @@ $(function () {
 
 	function TableNumberCell(value) {
 		this.displayValue = Math.round(value);
-		this.displayValue = (this.displayValue + '').replace('-', '&minus;')
+		this.displayValue = (this.displayValue + '').replace('-', '&minus;');
 		this.cellClass = 'cell_type_number';
 		if (value > 0) {
 			this.cellClass += ' cell_positive_yes';
