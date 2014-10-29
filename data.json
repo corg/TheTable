@@ -1,0 +1,6 @@
+[
+	["a50b3", "Steve Martin", 235.35, "IMDb: http://imdb.com", true],
+	["45baa", "Alec Baldwin", -215.5, "Здесь ссылки нет", false],
+	["aa33c", "Sacha Baron Cohen", 36.6, "http://www.imdb.com/name/nm0056187/ (IMDb)", true],
+	["f5553fffff", "Tim Allen", 0, "", false]
+]
