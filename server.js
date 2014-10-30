@@ -1,5 +1,6 @@
 var fs = require('fs');
 var tableData;
+var sortedData = {};
 
 fs.readFile('data.json', 'utf8', function (error, data) {
 	if (error) throw error;
@@ -18,18 +19,26 @@ app.get('/data', function (req, res) {
 		offset = parseInt(req.query.offset, 10) || 0,
 		limit = parseInt(req.query.limit, 10) || 100;
 
-	var responseData = tableData.concat();
+	var responseData;
 
 	if (!isNaN(sort)) {
-		responseData.sort(function compare(a, b) {
-			if (a[sort] < b[sort]) {
-				return -1 * sortOrder;
-			}
-			if (a[sort] > b[sort]) {
-				return sortOrder;
-			}
-			return 0;
-		});
+		if (sortedData[sort]) {
+			responseData = sortedData[sort]
+		} else {
+			responseData = tableData.concat();
+			responseData.sort(function compare(a, b) {
+				if (a[sort] < b[sort]) {
+					return -1 * sortOrder;
+				}
+				if (a[sort] > b[sort]) {
+					return sortOrder;
+				}
+				return 0;
+			});
+			sortedData[sort] = responseData;
+		}
+	} else {
+		responseData = tableData;
 	}
 
 	res.json(responseData.slice(offset, offset + limit))
