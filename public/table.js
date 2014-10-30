@@ -33,7 +33,7 @@ $(function () {
 					type: 'string'
 				}
 			],
-			pageSize: 100
+			pageSize: 5000
 		});
 
 		table.loadData();
@@ -42,33 +42,21 @@ $(function () {
 
 	function Table(options) {
 		this.container = $(options.container);
+		this.columns = options.columns;
 		this.rows = [];
 		this.pageSize = options.pageSize || 100;
 
-		this.header = new TableHeader(this, options.columns);
-
-		var table = this;
-		this.container.on('click', 'th .pseudo', function () {
-			var newSortIndex = table.header.elements.index($(this).closest('th'));
-			if (newSortIndex == table.sortIndex) {
-				table.sortOrder = -1 * table.sortOrder;
-			} else {
-				table.sortOrder = 1;
-			}
-			window.scrollTo(0, 0);
-			table.offset = 0;
-			table.rows = [];
-			table.sortIndex = newSortIndex;
-			table.loadData();
+		this.header = new TableHeader({
+			tableContainerElement: this.container,
+			columns: this.columns,
+			onSort: this.sort.bind(this)
 		});
 
-		this.loadMoreTrigger = $('.load-more-trigger')
-
 		$(window).scroll(function () {
-			if (table.loadMoreTrigger.offset().top <= window.scrollY + window.innerHeight && !table.dataLoading) {
-				table.loadData();
+			if (!this.dataLimitReached && document.body.clientHeight - 50 <= window.scrollY + window.innerHeight) {
+				this.loadData();
 			}
-		})
+		}.bind(this))
 	}
 
 
@@ -76,11 +64,11 @@ $(function () {
 		data = $.isArray(data) ? data : [];
 
 		if (!data.length) {
-			this.loadMoreTrigger.hide();
+			this.dataLimitReached = true;
 		}
 
 		for (var i = 0, l = data.length; i < l; i++) {
-			this.rows.push(new TableRow(this, data[i]))
+			this.rows.push(new TableRow(this.columns, data[i]))
 		}
 
 		this.offset = (this.offset || 0) + data.length;
@@ -90,7 +78,7 @@ $(function () {
 	Table.prototype.render = function (offset) {
 		var html = '';
 		if (!offset) {
-			 html += this.header.render();
+			 html += this.header.render(this.sortIndex, this.sortOrder);
 		}
 		for (var i = offset || 0, l = this.rows.length; i < l; i++) {
 			html += this.rows[i].render();
@@ -101,8 +89,6 @@ $(function () {
 		} else {
 			this.container.get(0).innerHTML = html;
 		}
-
-		this.header.elements = this.container.find('th');
 	};
 
 
@@ -122,24 +108,46 @@ $(function () {
 	};
 
 
-	function TableHeader(parentTable, columns) {
-		this.parentTable = parentTable;
-		this.columns = $.isArray(columns) ? columns : [];
+	Table.prototype.sort = function (sortIndex) {
+		if (sortIndex === this.sortIndex) {
+			this.sortOrder = -1 * this.sortOrder;
+		} else {
+			this.sortOrder = 1;
+		}
+		window.scrollTo(0, 0);
+		this.offset = 0;
+		this.rows = [];
+		this.sortIndex = sortIndex;
+		this.loadData();
+	};
+
+
+	function TableHeader(options) {
+		this.columns = $.isArray(options.columns) ? options.columns : [];
 		this.sortOrderIcons = {
 			'1': '&uarr;',
 			'-1': '&darr;'
+		};
+
+		if ($.isFunction(options.onSort)) {
+			$(options.tableContainerElement).on('click', 'th .pseudo', function () {
+				var sortIndex = $(options.tableContainerElement).find('th').index($(this).closest('th'));
+
+				options.onSort(sortIndex);
+			});
 		}
 	}
 
 
-	TableHeader.prototype.render = function () {
+
+	TableHeader.prototype.render = function (sortIndex, sortOrder) {
 		var html = '';
 		for (var i = 0, l = this.columns.length; i < l; i++) {
 			html += '<th>' +
 				'<div class="header_placeholder">' + this.columns[i].title + '</div>' +
 				'<div class="header_sticky">' +
 					(this.columns[i].disableSorting ? this.columns[i].title	: '<span class="pseudo">' + this.columns[i].title + '</span>') +
-					(this.parentTable.sortIndex == i ? ' <span class="header__sort-icon">' + this.sortOrderIcons[this.parentTable.sortOrder] + '</span>' : '') +
+					(sortIndex === i ? ' <span class="header__sort-icon">' + this.sortOrderIcons[sortOrder] + '</span>' : '') +
 				'</div>' +
 				'</th>';
 		}
@@ -148,31 +156,25 @@ $(function () {
 	};
 
 
-	function TableRow(parentTable, data) {
-		this.parentTable = parentTable;
+	function TableRow(columns, data) {
 		this.data = data;
 		this.cells = [];
 
 		for (var i = 0, l = this.data.length; i < l; i++) {
-			this.cells.push(this.createCell(this.data[i], this.parentTable.header.columns[i].type));
+			this.cells.push(this.createCell(this.data[i], columns[i].type));
 		}
 	}
 
 
 	TableRow.prototype.createCell = function (value, type) {
-		var newCell;
-
 		if (type === 'boolean') {
-			newCell = new TableBooleanCell(value);
-		} else if (type === 'number') {
-			newCell = new TableNumberCell(value);
-		} else {
-			newCell = new TableCell(value);
+			return new TableBooleanCell(value);
+		}
+		if (type === 'number') {
+			return new TableNumberCell(value);
 		}
 
-		newCell.value = value;
-
-		return newCell;
+		return new TableCell(value);
 	};
 
 
