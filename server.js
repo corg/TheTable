@@ -18,8 +18,10 @@ app.get('/data', function (req, res) {
 		offset = parseInt(req.query.offset, 10) || 0,
 		limit = parseInt(req.query.limit, 10) || 100;
 
+	var responseData = tableData.concat();
+
 	if (!isNaN(sort)) {
-		tableData.sort(function compare(a, b) {
+		responseData.sort(function compare(a, b) {
 			if (a[sort] < b[sort]) {
 				return -1 * sortOrder;
 			}
@@ -30,7 +32,7 @@ app.get('/data', function (req, res) {
 		});
 	}
 
-	res.json(tableData.slice(offset, offset + limit))
+	res.json(responseData.slice(offset, offset + limit))
 });
 
 app.listen(9090, function () {});
