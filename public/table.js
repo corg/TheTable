@@ -1,12 +1,34 @@
 $(function () {
 	var table = new Table('.table-container', [
-		{ title: 'ID' },
-		{ title: 'Имя' },
-		{ title: 'Фамилия' },
-		{ title: 'Место работы' },
-		{ title: 'Динамика' },
-		{ title: 'Фаворит', disableSorting: true },
-		{ title: 'Что-то со ссылкой' }
+		{
+			title: 'ID',
+			type: 'string'
+		},
+		{
+			title: 'Имя',
+			type: 'string'
+		},
+		{
+			title: 'Фамилия',
+			type: 'string'
+		},
+		{
+			title: 'Место работы',
+			type: 'string'
+		},
+		{
+			title: 'Динамика',
+			type: 'number'
+		},
+		{
+			title: 'Фаворит',
+			type: 'boolean',
+			disableSorting: true
+		},
+		{
+			title: 'Что-то со ссылкой',
+			type: 'string'
+		}
 	]);
 
 	function loadData(limit, offset, sort, sortOrder) {
@@ -30,8 +52,7 @@ $(function () {
 		this.tableContainer = $(tableContainer);
 		this.rows = [];
 
-		this.header = new TableHeader(columns);
-		this.header.parentTable = this;
+		this.header = new TableHeader(this, columns);
 
 		var table = this;
 		this.tableContainer.on('click', 'th .pseudo', function () {
@@ -52,7 +73,7 @@ $(function () {
 		this.rows = [];
 
 		for (var i = 0, l = this.data.length; i < l; i++) {
-			this.rows.push(new TableRow(this.data[i]))
+			this.rows.push(new TableRow(this, this.data[i]))
 		}
 	};
 
@@ -67,7 +88,8 @@ $(function () {
 	};
 
 
-	function TableHeader(columns) {
+	function TableHeader(parentTable, columns) {
+		this.parentTable = parentTable;
 		this.columns = $.isArray(columns) ? columns : [];
 		this.sortOrderIcons = {
 			'1': '&uarr;',
@@ -91,21 +113,22 @@ $(function () {
 	};
 
 
-	function TableRow(data) {
+	function TableRow(parentTable, data) {
+		this.parentTable = parentTable;
 		this.data = data;
 		this.cells = [];
 
 		for (var i = 0, l = this.data.length; i < l; i++) {
-			this.cells.push(this.createCell(this.data[i]));
+			this.cells.push(this.createCell(this.data[i], this.parentTable.header.columns[i].type));
 		}
 	}
 
-	TableRow.prototype.createCell = function (value) {
+	TableRow.prototype.createCell = function (value, type) {
 		var newCell;
 
-		if (typeof value === 'boolean') {
+		if (type === 'boolean') {
 			newCell = new TableBooleanCell(value);
-		} else if (typeof value === 'number') {
+		} else if (type === 'number') {
 			newCell = new TableNumberCell(value);
 		} else {
 			newCell = new TableCell(value);
