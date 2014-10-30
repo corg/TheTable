@@ -1,6 +1,8 @@
 body {
 	font-family: sans-serif;
 	font-size: 13px;
+	margin: 0;
+	padding: 0;
 }
 
 
@@ -71,4 +73,10 @@ tr:hover td {
 
 .cell_positive_no {
 	color: red;
+}
+
+
+.load-more-trigger {
+	height: 10px;
+	background: red;
 }

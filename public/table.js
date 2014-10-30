@@ -1,94 +1,123 @@
 $(function () {
 	function init() {
-		var table = new Table('.table-container', [
-			{
-				title: 'ID',
-				type: 'string'
-			},
-			{
-				title: 'Имя',
-				type: 'string'
-			},
-			{
-				title: 'Фамилия',
-				type: 'string'
-			},
-			{
-				title: 'Место работы',
-				type: 'string'
-			},
-			{
-				title: 'Динамика',
-				type: 'number'
-			},
-			{
-				title: 'Фаворит',
-				type: 'boolean',
-				disableSorting: true
-			},
-			{
-				title: 'Что-то со ссылкой',
-				type: 'string'
-			}
-		]);
+		var table = new Table({
+			container: '.table-container',
+			columns: [
+				{
+					title: 'ID',
+					type: 'string'
+				},
+				{
+					title: 'Имя',
+					type: 'string'
+				},
+				{
+					title: 'Фамилия',
+					type: 'string'
+				},
+				{
+					title: 'Место работы',
+					type: 'string'
+				},
+				{
+					title: 'Динамика',
+					type: 'number'
+				},
+				{
+					title: 'Фаворит',
+					type: 'boolean',
+					disableSorting: true
+				},
+				{
+					title: 'Что-то со ссылкой',
+					type: 'string'
+				}
+			],
+			pageSize: 100
+		});
 
-		table.loadData(1000);
+		table.loadData();
 	}
 
 
-	function Table(tableContainer, columns) {
-		this.tableContainer = $(tableContainer);
+	function Table(options) {
+		this.container = $(options.container);
 		this.rows = [];
+		this.pageSize = options.pageSize || 100;
 
-		this.header = new TableHeader(this, columns);
+		this.header = new TableHeader(this, options.columns);
 
 		var table = this;
-		this.tableContainer.on('click', 'th .pseudo', function () {
+		this.container.on('click', 'th .pseudo', function () {
 			var newSortIndex = table.header.elements.index($(this).closest('th'));
 			if (newSortIndex == table.sortIndex) {
 				table.sortOrder = -1 * table.sortOrder;
 			} else {
 				table.sortOrder = 1;
 			}
+			window.scrollTo(0, 0);
+			table.offset = 0;
+			table.rows = [];
 			table.sortIndex = newSortIndex;
-			table.loadData(1000, 0, table.sortIndex, table.sortOrder);
+			table.loadData();
+		});
+
+		this.loadMoreTrigger = $('.load-more-trigger')
+
+		$(window).scroll(function () {
+			if (table.loadMoreTrigger.offset().top <= window.scrollY + window.innerHeight && !table.dataLoading) {
+				table.loadData();
+			}
 		})
 	}
 
 
 	Table.prototype.appendData = function (data) {
-		this.data = $.isArray(data) ? data : [];
+		data = $.isArray(data) ? data : [];
 
-		this.rows = [];
-
-		for (var i = 0, l = this.data.length; i < l; i++) {
-			this.rows.push(new TableRow(this, this.data[i]))
+		if (!data.length) {
+			this.loadMoreTrigger.hide();
 		}
+
+		for (var i = 0, l = data.length; i < l; i++) {
+			this.rows.push(new TableRow(this, data[i]))
+		}
+
+		this.offset = (this.offset || 0) + data.length;
 	};
 
 
-	Table.prototype.render = function () {
-		var html = this.header.render();
-		for (var i = 0, l = this.rows.length; i < l; i++) {
+	Table.prototype.render = function (offset) {
+		var html = '';
+		if (!offset) {
+			 html += this.header.render();
+		}
+		for (var i = offset || 0, l = this.rows.length; i < l; i++) {
 			html += this.rows[i].render();
 		}
 
-		this.tableContainer.get(0).innerHTML = '<table>' + html + '</table>';
-		this.header.elements = this.tableContainer.find('th');
+		if (offset) {
+			this.container.append(html);
+		} else {
+			this.container.get(0).innerHTML = html;
+		}
+
+		this.header.elements = this.container.find('th');
 	};
 
 
-	Table.prototype.loadData = function (limit, offset, sort, sortOrder) {
+	Table.prototype.loadData = function () {
 		$.getJSON('/data',
 			{
-				limit: limit,
-				offset: offset,
-				sort: sort,
-				sortOrder: sortOrder
+				limit: this.pageSize,
+				offset: this.offset,
+				sort: this.sortIndex,
+				sortOrder: this.sortOrder
 			},
 			function (data) {
+				var prevOffset = this.offset;
 				this.appendData(data);
-				this.render();
+				this.render(prevOffset);
 			}.bind(this));
 	};
 
