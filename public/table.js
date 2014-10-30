@@ -1,51 +1,39 @@
 $(function () {
-	var table = new Table('.table-container', [
-		{
-			title: 'ID',
-			type: 'string'
-		},
-		{
-			title: 'Имя',
-			type: 'string'
-		},
-		{
-			title: 'Фамилия',
-			type: 'string'
-		},
-		{
-			title: 'Место работы',
-			type: 'string'
-		},
-		{
-			title: 'Динамика',
-			type: 'number'
-		},
-		{
-			title: 'Фаворит',
-			type: 'boolean',
-			disableSorting: true
-		},
-		{
-			title: 'Что-то со ссылкой',
-			type: 'string'
-		}
-	]);
-
-	function loadData(limit, offset, sort, sortOrder) {
-		$.getJSON('/data',
+	function init() {
+		var table = new Table('.table-container', [
 			{
-				limit: limit,
-				offset: offset,
-				sort: sort,
-				sortOrder: sortOrder
+				title: 'ID',
+				type: 'string'
 			},
-			function (data) {
-				table.appendData(data);
-				table.render();
-			});
-	}
+			{
+				title: 'Имя',
+				type: 'string'
+			},
+			{
+				title: 'Фамилия',
+				type: 'string'
+			},
+			{
+				title: 'Место работы',
+				type: 'string'
+			},
+			{
+				title: 'Динамика',
+				type: 'number'
+			},
+			{
+				title: 'Фаворит',
+				type: 'boolean',
+				disableSorting: true
+			},
+			{
+				title: 'Что-то со ссылкой',
+				type: 'string'
+			}
+		]);
 
-	loadData(1000);
+		table.loadData(1000);
+	}
 
 
 	function Table(tableContainer, columns) {
@@ -63,9 +51,10 @@ $(function () {
 				table.sortOrder = 1;
 			}
 			table.sortIndex = newSortIndex;
-			loadData(1000, 0, table.sortIndex, table.sortOrder);
+			table.loadData(1000, 0, table.sortIndex, table.sortOrder);
 		})
 	}
+
 
 	Table.prototype.appendData = function (data) {
 		this.data = $.isArray(data) ? data : [];
@@ -76,6 +65,7 @@ $(function () {
 			this.rows.push(new TableRow(this, this.data[i]))
 		}
 	};
+
 
 	Table.prototype.render = function () {
 		var html = this.header.render();
@@ -88,6 +78,21 @@ $(function () {
 	};
 
 
+	Table.prototype.loadData = function (limit, offset, sort, sortOrder) {
+		$.getJSON('/data',
+			{
+				limit: limit,
+				offset: offset,
+				sort: sort,
+				sortOrder: sortOrder
+			},
+			function (data) {
+				this.appendData(data);
+				this.render();
+			}.bind(this));
+	};
+
+
 	function TableHeader(parentTable, columns) {
 		this.parentTable = parentTable;
 		this.columns = $.isArray(columns) ? columns : [];
@@ -96,6 +101,7 @@ $(function () {
 			'-1': '&darr;'
 		}
 	}
+
 
 	TableHeader.prototype.render = function () {
 		var html = '';
@@ -123,6 +129,7 @@ $(function () {
 		}
 	}
 
+
 	TableRow.prototype.createCell = function (value, type) {
 		var newCell;
 
@@ -139,6 +146,7 @@ $(function () {
 		return newCell;
 	};
 
+
 	TableRow.prototype.render = function () {
 		var html = '';
 		for (var i = 0, l = this.cells.length; i < l; i++) {
@@ -152,6 +160,7 @@ $(function () {
 		// простейший поиск ссылок: конец ссылки определяется пробелом или концом строки
 		this.displayValue = value.replace(/(https?:\/\/.*?)(\s|$)/, '<a href="$1" target="_blank">$1</a>$2');
 	}
+
 
 	TableCell.prototype.render = function () {
 		return '<td>' + this.displayValue + '</td>';
@@ -170,6 +179,7 @@ $(function () {
 		}
 	}
 
+
 	TableNumberCell.prototype.render = function () {
 		return '<td class="' + this.cellClass + '">' + this.displayValue + '</td>';
 	};
@@ -179,5 +189,9 @@ $(function () {
 		this.displayValue = value ? 'Да' : 'Нет';
 	}
 
+
 	TableBooleanCell.prototype.render = TableCell.prototype.render;
+
+
+	init();
 });
