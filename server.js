@@ -22,8 +22,9 @@ app.get('/data', function (req, res) {
 	var responseData;
 
 	if (!isNaN(sort)) {
-		if (sortedData[sort]) {
-			responseData = sortedData[sort]
+		var sortCacheKey = sortOrder.toString() + sort.toString();
+		if (sortedData[sortCacheKey]) {
+			responseData = sortedData[sortCacheKey]
 		} else {
 			responseData = tableData.concat();
 			responseData.sort(function compare(a, b) {
@@ -35,7 +36,7 @@ app.get('/data', function (req, res) {
 				}
 				return 0;
 			});
-			sortedData[sort] = responseData;
+			sortedData[sortCacheKey] = responseData;
 		}
 	} else {
 		responseData = tableData;
