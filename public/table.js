@@ -33,7 +33,7 @@ $(function () {
 					type: 'string'
 				}
 			],
-			pageSize: 5000
+			pageSize: 100
 		});
 
 		table.loadData();
@@ -52,8 +52,10 @@ $(function () {
 			onSort: this.sort.bind(this)
 		});
 
+		this.loadingIndicator = new LoadingIndicator();
+
 		$(window).scroll(function () {
-			if (!this.dataLimitReached && document.body.clientHeight - 50 <= window.scrollY + window.innerHeight) {
+			if (!this.dataLimitReached && document.body.clientHeight - 50 <= window.scrollY + window.innerHeight && !this.isBusy()) {
 				this.loadData();
 			}
 		}.bind(this))
@@ -93,6 +95,7 @@ $(function () {
 
 
 	Table.prototype.loadData = function () {
+		this.setBusyStatus();
 		$.getJSON('/data',
 			{
 				limit: this.pageSize,
@@ -104,6 +107,7 @@ $(function () {
 				var prevOffset = this.offset;
 				this.appendData(data);
 				this.render(prevOffset);
+				this.removeBusyStatus();
 			}.bind(this));
 	};
 
@@ -119,6 +123,23 @@ $(function () {
 		this.rows = [];
 		this.sortIndex = sortIndex;
 		this.loadData();
+	};
+
+
+	Table.prototype.isBusy = function () {
+		return this.busy;
+	};
+
+
+	Table.prototype.setBusyStatus = function () {
+		this.busy = true;
+		this.loadingIndicator.show();
+	};
+
+
+	Table.prototype.removeBusyStatus = function () {
+		this.busy = false;
+		this.loadingIndicator.hide();
 	};
 
 
@@ -154,6 +175,7 @@ $(function () {
 
 		return '<tr>' + html + '</tr>';
 	};
+
 
 
 	function TableRow(columns, data) {
@@ -222,6 +244,21 @@ $(function () {
 
 
 	TableBooleanCell.prototype.render = TableCell.prototype.render;
+
+
+	function LoadingIndicator() {
+		this.element = $('.loading-indicator').hide();
+	}
+
+
+	LoadingIndicator.prototype.show = function () {
+		this.element.show();
+	};
+
+
+	LoadingIndicator.prototype.hide = function () {
+		this.element.hide();
+	};
 
 
 	init();
