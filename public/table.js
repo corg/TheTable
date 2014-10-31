@@ -40,6 +40,14 @@ $(function () {
 	}
 
 
+	/**
+	 * Создает таблицу
+	 * @param options Конфиг
+	 * @param options.container jQuery-элемент (или селектор) с тегом table
+	 * @param options.columns Массив с конфигом колонок
+	 * @param options.pageSize Начальное количество строк и величина доргужаемых позже "порций"
+	 * @constructor
+	 */
 	function Table(options) {
 		this.container = $(options.container);
 		this.columns = options.columns;
@@ -62,6 +70,10 @@ $(function () {
 	}
 
 
+	/**
+	 * Создает на основе переданных данных строки таблицы, и добавляет их к таблице
+	 * @param data Массив новых строк таблицы
+	 */
 	Table.prototype.appendData = function (data) {
 		data = $.isArray(data) ? data : [];
 
@@ -77,6 +89,10 @@ $(function () {
 	};
 
 
+	/**
+	 * Создает HTML строк таблицы, и выводит его
+	 * @param offset Индекс начала новых данных, которые будут добавлены к верстке
+	 */
 	Table.prototype.render = function (offset) {
 		var html = '';
 		if (!offset) {
@@ -94,6 +110,9 @@ $(function () {
 	};
 
 
+	/**
+	 * Обращается к серверу за данными, инициирует обработку и вывод полученных данных
+	 */
 	Table.prototype.loadData = function () {
 		this.setBusyStatus();
 		$.getJSON('/data',
@@ -112,6 +131,10 @@ $(function () {
 	};
 
 
+	/**
+	 * Обработка сортировки таблицы
+	 * @param sortIndex Номер колонки, по которой происходит сортировка
+	 */
 	Table.prototype.sort = function (sortIndex) {
 		if (sortIndex === this.sortIndex) {
 			this.sortOrder = -1 * this.sortOrder;
@@ -126,23 +149,40 @@ $(function () {
 	};
 
 
+	/**
+	 * Показывает, "занята" ли таблица (загружаются ли данные)
+	 * @returns {boolean}
+	 */
 	Table.prototype.isBusy = function () {
 		return this.busy;
 	};
 
 
+	/**
+	 * Выставляет флаг загрузки
+	 */
 	Table.prototype.setBusyStatus = function () {
 		this.busy = true;
 		this.loadingIndicator.show();
 	};
 
-
+	/**
+	 * Снимает флаг загрузки
+	 */
 	Table.prototype.removeBusyStatus = function () {
 		this.busy = false;
 		this.loadingIndicator.hide();
 	};
 
 
+	/**
+	 * Создает заголовок таблицы
+	 * @param options Конфиг
+	 * @param options.columns Массив с конфигом колонок
+	 * @param options.tableContainerElement jQuery-элемент (или селектор) с тегом table
+	 * @param options.onSort Функция реакции на сортировку
+	 * @constructor
+	 */
 	function TableHeader(options) {
 		this.columns = $.isArray(options.columns) ? options.columns : [];
 		this.sortOrderIcons = {
@@ -160,7 +200,12 @@ $(function () {
 	}
 
 
-
+	/**
+	 * Формирует HTML заголовка таблицы
+	 * @param sortIndex Номер колонки, по которой происходит сортировка
+	 * @param sortOrder Направление сортировки
+	 * @returns {string}
+	 */
 	TableHeader.prototype.render = function (sortIndex, sortOrder) {
 		var html = '';
 		for (var i = 0, l = this.columns.length; i < l; i++) {
@@ -177,7 +222,12 @@ $(function () {
 	};
 
 
-
+	/**
+	 * Создает строку таблицы
+	 * @param columns Массив с конфигом колонок
+	 * @param data Массив с данными ячеек
+	 * @constructor
+	 */
 	function TableRow(columns, data) {
 		this.data = data;
 		this.cells = [];
@@ -188,6 +238,11 @@ $(function () {
 	}
 
 
+	/**
+	 * Создает ячейку нужного типа
+	 * @param value Значение ячейки
+	 * @param type Тип ячейки
+	 */
 	TableRow.prototype.createCell = function (value, type) {
 		if (type === 'boolean') {
 			return new TableBooleanCell(value);
@@ -209,15 +264,22 @@ $(function () {
 	};
 
 
+	/**
+	 * Создает ячейку таблицы (общего типа)
+	 * @param value Значение ячейки
+	 * @constructor
+	 */
 	function TableCell(value) {
 		// простейший поиск ссылок: конец ссылки определяется пробелом или концом строки
 		this.displayValue = value.replace(/(https?:\/\/.*?)(\s|$)/, '<a href="$1" target="_blank">$1</a>$2');
 	}
 
 
+
 	TableCell.prototype.render = function () {
 		return '<td>' + this.displayValue + '</td>';
 	};
+
 
 
 	function TableNumberCell(value) {
@@ -238,12 +300,14 @@ $(function () {
 	};
 
 
+
 	function TableBooleanCell(value) {
 		this.displayValue = value ? 'Да' : 'Нет';
 	}
 
 
 	TableBooleanCell.prototype.render = TableCell.prototype.render;
+
 
 
 	function LoadingIndicator() {
