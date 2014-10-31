@@ -2,7 +2,7 @@
 
 ### Установка
 
-    $ git clone git@github.com:corg/TheTable.git
+    $ git clone https://github.com/corg/TheTable.git
     $ cd TheTable
     $ npm install
 
