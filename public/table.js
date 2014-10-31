@@ -49,16 +49,17 @@ $(function () {
 	 * @constructor
 	 */
 	function Table(options) {
-		this.container = $(options.container);
+		this.headerContainer = $(options.container).find('thead');
+		this.bodyContainer = $(options.container).find('tbody');
 		this.columns = options.columns;
 		this.rows = [];
 		this.pageSize = options.pageSize || 100;
 
 		this.header = new TableHeader({
-			tableContainerElement: this.container,
 			columns: this.columns,
 			onSort: this.sort.bind(this)
 		});
+		this.headerContainer.append(this.header.container);
 
 		this.loadingIndicator = new LoadingIndicator();
 
@@ -98,16 +99,16 @@ $(function () {
 	Table.prototype.render = function (offset) {
 		var html = '';
 		if (!offset) {
-			 html += this.header.render(this.sortIndex, this.sortOrder);
+			this.header.render(this.sortIndex, this.sortOrder);
 		}
 		for (var i = offset || 0, l = this.rows.length; i < l; i++) {
 			html += this.rows[i].render();
 		}
 
 		if (offset) {
-			this.container.append(html);
+			this.bodyContainer.append(html);
 		} else {
-			this.container.get(0).innerHTML = html;
+			this.bodyContainer.get(0).innerHTML = html;
 		}
 	};
 
@@ -202,7 +203,6 @@ $(function () {
 	 * Создает заголовок таблицы
 	 * @param options Конфиг
 	 * @param options.columns Массив с конфигом колонок
-	 * @param options.tableContainerElement jQuery-элемент (или селектор) с тегом table
 	 * @param options.onSort Функция реакции на сортировку
 	 * @constructor
 	 */
@@ -213,9 +213,12 @@ $(function () {
 			'-1': '&darr;'
 		};
 
+		var container = $('<tr></tr>');
+		this.container = container;
+
 		if ($.isFunction(options.onSort)) {
-			$(options.tableContainerElement).on('click', 'th .pseudo', function () {
-				var sortIndex = $(options.tableContainerElement).find('th').index($(this).closest('th'));
+			container.on('click', 'th .pseudo', function () {
+				var sortIndex = container.find('th').index($(this).closest('th'));
 
 				options.onSort(sortIndex);
 			});
@@ -224,10 +227,9 @@ $(function () {
 
 
 	/**
-	 * Формирует HTML заголовка таблицы
+	 * Формирует заголовок таблицы
 	 * @param sortIndex Номер колонки, по которой происходит сортировка
 	 * @param sortOrder Направление сортировки
-	 * @returns {string}
 	 */
 	TableHeader.prototype.render = function (sortIndex, sortOrder) {
 		var html = '';
@@ -241,7 +243,7 @@ $(function () {
 				'</th>';
 		}
 
-		return '<tr>' + html + '</tr>';
+		this.container.get(0).innerHTML = html;
 	};
 
 
