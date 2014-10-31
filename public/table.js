@@ -66,7 +66,7 @@ $(function () {
 		this.loadSortingSettings();
 
 		$(window).scroll(function () {
-			if (!this.dataLimitReached && document.body.clientHeight - 50 <= document.documentElement.scrollTop + window.innerHeight && !this.isBusy()) {
+			if (!this.dataLimitReached && document.body.clientHeight - 50 <= (window.scrollY || document.documentElement.scrollTop) + window.innerHeight && !this.isBusy()) {
 				this.loadData();
 			}
 		}.bind(this))
