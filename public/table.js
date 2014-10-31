@@ -300,7 +300,7 @@ $(function () {
 
 
 	TableCell.prototype.render = function () {
-		return '<td>' + this.displayValue + '</td>';
+		return '<td' + (this.cellClass ? ' class="' + this.cellClass + '"' : '') + '>' + this.displayValue + '</td>';
 	};
 
 
@@ -317,10 +317,7 @@ $(function () {
 		}
 	}
 
-
-	TableNumberCell.prototype.render = function () {
-		return '<td class="' + this.cellClass + '">' + this.displayValue + '</td>';
-	};
+	extendClass(TableNumberCell, TableCell);
 
 
 
@@ -328,8 +325,7 @@ $(function () {
 		this.displayValue = value ? 'Да' : 'Нет';
 	}
 
-
-	TableBooleanCell.prototype.render = TableCell.prototype.render;
+	extendClass(TableBooleanCell, TableCell);
 
 
 
@@ -346,6 +342,14 @@ $(function () {
 	LoadingIndicator.prototype.hide = function () {
 		this.element.hide();
 	};
+
+
+	function extendClass(subClass, superClass) {
+		var F = function() {};
+		F.prototype = superClass.prototype;
+		subClass.prototype = new F();
+		subClass.prototype.constructor = subClass;
+	}
 
 
 	init();
