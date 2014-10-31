@@ -307,14 +307,14 @@ $(function () {
 
 	function TableNumberCell(value) {
 		this.displayValue = Math.round(value);
-		this.displayValue = (this.displayValue + '').replace('-', '&minus;');
 		this.cellClass = 'cell_type_number';
-		if (value > 0) {
+		if (this.displayValue > 0) {
 			this.cellClass += ' cell_positive_yes';
 		}
-		if (value < 0) {
+		if (this.displayValue < 0) {
 			this.cellClass += ' cell_positive_no';
 		}
+		this.displayValue = (this.displayValue + '').replace('-', '&minus;');
 	}
 
 	extendClass(TableNumberCell, TableCell);
