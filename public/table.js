@@ -62,6 +62,8 @@ $(function () {
 
 		this.loadingIndicator = new LoadingIndicator();
 
+		this.loadSortingSettings();
+
 		$(window).scroll(function () {
 			if (!this.dataLimitReached && document.body.clientHeight - 50 <= window.scrollY + window.innerHeight && !this.isBusy()) {
 				this.loadData();
@@ -145,6 +147,7 @@ $(function () {
 		this.offset = 0;
 		this.rows = [];
 		this.sortIndex = sortIndex;
+		this.saveSortingSettings();
 		this.loadData();
 	};
 
@@ -172,6 +175,26 @@ $(function () {
 	Table.prototype.removeBusyStatus = function () {
 		this.busy = false;
 		this.loadingIndicator.hide();
+	};
+
+
+	Table.prototype.saveSortingSettings = function () {
+		if (isNaN(this.sortIndex) || isNaN(this.sortOrder)) {
+			return;
+		}
+
+		localStorage.setItem('sortIndex', this.sortIndex);
+		localStorage.setItem('sortOrder', this.sortOrder);
+	};
+
+
+	Table.prototype.loadSortingSettings = function () {
+		this.sortIndex = localStorage.getItem('sortIndex');
+		this.sortOrder = localStorage.getItem('sortOrder');
+		if (!isNaN(this.sortIndex) && !isNaN(this.sortOrder)) {
+			this.sortIndex = parseInt(this.sortIndex, 10);
+			this.sortOrder = parseInt(this.sortOrder, 10);
+		}
 	};
 
 
